@@ -22,52 +22,53 @@
 // SOFTWARE.
 //
 
-#include "lidar_common_callback.h"
 
-#include "../lds_lidar.h"
 
-#include <string>
+#include "lidar_common_callback.h" // "lidar_common_callback.h" 헤더 파일 포함
 
-namespace livox_ros {
+#include "../lds_lidar.h" // 상위 디렉토리의 "lds_lidar.h" 헤더 파일 포함
 
+#include <string> // 문자열 처리를 위한 string 라이브러리 포함
+
+namespace livox_ros { // livox_ros 네임스페이스 시작
+
+// LidarCommonCallback 클래스의 OnLidarPointClounCb 함수 정의
 void LidarCommonCallback::OnLidarPointClounCb(PointFrame* frame, void* client_data) {
-  if (frame == nullptr) {
-    printf("LidarPointCloudCb frame is nullptr.\n");
-    return;
+  if (frame == nullptr) { // frame이 nullptr인지 확인
+    printf("LidarPointCloudCb frame is nullptr.\n"); // frame이 nullptr이면 메시지 출력
+    return; // 함수 종료
   }
 
-  if (client_data == nullptr) {
-    printf("Lidar point cloud cb failed, client data is nullptr.\n");
-    return;
+  if (client_data == nullptr) { // client_data가 nullptr인지 확인
+    printf("Lidar point cloud cb failed, client data is nullptr.\n"); // client_data가 nullptr이면 메시지 출력
+    return; // 함수 종료
   }
 
-  if (frame->lidar_num ==0) {
-    printf("LidarPointCloudCb lidar_num:%u.\n", frame->lidar_num);
-    return;
+  if (frame->lidar_num ==0) { // frame의 lidar_num이 0인지 확인
+    printf("LidarPointCloudCb lidar_num:%u.\n", frame->lidar_num); // lidar_num이 0이면 메시지 출력
+    return; // 함수 종료
   }
 
-  LdsLidar *lds_lidar = static_cast<LdsLidar *>(client_data);
+  LdsLidar *lds_lidar = static_cast<LdsLidar *>(client_data); // client_data를 LdsLidar 타입으로 캐스팅
   
-  //printf("Lidar point cloud, lidar_num:%u.\n", frame->lidar_num);
+  //printf("Lidar point cloud, lidar_num:%u.\n", frame->lidar_num); // 디버그용 메시지 (현재는 주석 처리됨)
 
-  lds_lidar->StoragePointData(frame);
+  lds_lidar->StoragePointData(frame); // LdsLidar 객체의 StoragePointData 함수 호출
 }
 
+// LidarCommonCallback 클래스의 LidarImuDataCallback 함수 정의
 void LidarCommonCallback::LidarImuDataCallback(ImuData* imu_data, void *client_data) {
-  if (imu_data == nullptr) {
-    printf("Imu data is nullptr.\n");
-    return;
+  if (imu_data == nullptr) { // imu_data가 nullptr인지 확인
+    printf("Imu data is nullptr.\n"); // imu_data가 nullptr이면 메시지 출력
+    return; // 함수 종료
   }
-  if (client_data == nullptr) {
-    printf("Lidar point cloud cb failed, client data is nullptr.\n");
-    return;
+  if (client_data == nullptr) { // client_data가 nullptr인지 확인
+    printf("Lidar point cloud cb failed, client data is nullptr.\n"); // client_data가 nullptr이면 메시지 출력
+    return; // 함수 종료
   }
 
-  LdsLidar *lds_lidar = static_cast<LdsLidar *>(client_data);
-  lds_lidar->StorageImuData(imu_data);
+  LdsLidar *lds_lidar = static_cast<LdsLidar *>(client_data); // client_data를 LdsLidar 타입으로 캐스팅
+  lds_lidar->StorageImuData(imu_data); // LdsLidar 객체의 StorageImuData 함수 호출
 }
 
-} // namespace livox_ros
-
-
-
+} // namespace livox_ros // livox_ros 네임스페이스 끝
