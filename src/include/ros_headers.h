@@ -22,13 +22,13 @@
 // SOFTWARE.
 //
 
-#ifndef ROS_HEADERS_H_
-#define ROS_HEADERS_H_
+#ifndef ROS_HEADERS_H_ // ROS_HEADERS_H_가 정의되지 않았을 때
+#define ROS_HEADERS_H_ // ROS_HEADERS_H_를 정의
 
-#ifdef BUILDING_ROS1
-#include "ros1_headers.h"
-#elif defined BUILDING_ROS2
-#include "ros2_headers.h"
+#ifdef BUILDING_ROS1 // BUILDING_ROS1이 정의되어 있을 때
+#include "ros1_headers.h" // ROS1 헤더 파일 포함
+#elif defined BUILDING_ROS2 // BUILDING_ROS2가 정의되어 있을 때
+#include "ros2_headers.h" // ROS2 헤더 파일 포함
 #endif
 
-#endif // ROS_HEADERS_H_
+#endif // ROS_HEADERS_H_ // ROS_HEADERS_H_ 종료
