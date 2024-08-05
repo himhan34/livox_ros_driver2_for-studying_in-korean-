@@ -21,89 +21,99 @@
 
 #include "../rapidjson.h"
 
+// _MSC_VER 및 _M_AMD64가 정의된 경우 intrin.h를 포함하고 _umul128을 사용하도록 설정
 #if defined(_MSC_VER) && !__INTEL_COMPILER && defined(_M_AMD64)
-#include <intrin.h>  // for _umul128
+#include <intrin.h>  // _umul128를 위해 포함
 #pragma intrinsic(_umul128)
 #endif
 
 RAPIDJSON_NAMESPACE_BEGIN
 namespace internal {
 
+// BigInteger 클래스를 정의
 class BigInteger {
  public:
-  typedef uint64_t Type;
+  typedef uint64_t Type;  // Type을 uint64_t로 정의
 
+  // 복사 생성자
   BigInteger(const BigInteger &rhs) : count_(rhs.count_) {
-    std::memcpy(digits_, rhs.digits_, count_ * sizeof(Type));
+    std::memcpy(digits_, rhs.digits_, count_ * sizeof(Type));  // digits_ 배열을 복사
   }
 
+  // uint64_t로부터 초기화하는 생성자
   explicit BigInteger(uint64_t u) : count_(1) { digits_[0] = u; }
 
+  // 10진수 문자열로부터 초기화하는 생성자
   BigInteger(const char *decimals, size_t length) : count_(1) {
-    RAPIDJSON_ASSERT(length > 0);
+    RAPIDJSON_ASSERT(length > 0);  // 문자열 길이가 0보다 큰지 확인
     digits_[0] = 0;
     size_t i = 0;
     const size_t kMaxDigitPerIteration =
-        19;  // 2^64 = 18446744073709551616 > 10^19
+        19;  // 2^64 = 18446744073709551616 > 10^19, 최대 19자리씩 처리
     while (length >= kMaxDigitPerIteration) {
-      AppendDecimal64(decimals + i, decimals + i + kMaxDigitPerIteration);
+      AppendDecimal64(decimals + i, decimals + i + kMaxDigitPerIteration);  // 19자리씩 추가
       length -= kMaxDigitPerIteration;
       i += kMaxDigitPerIteration;
     }
 
-    if (length > 0) AppendDecimal64(decimals + i, decimals + i + length);
+    if (length > 0) AppendDecimal64(decimals + i, decimals + i + length);  // 남은 자리 추가
   }
 
+  // 복사 대입 연산자
   BigInteger &operator=(const BigInteger &rhs) {
     if (this != &rhs) {
       count_ = rhs.count_;
-      std::memcpy(digits_, rhs.digits_, count_ * sizeof(Type));
+      std::memcpy(digits_, rhs.digits_, count_ * sizeof(Type));  // digits_ 배열을 복사
     }
     return *this;
   }
 
+  // uint64_t로의 대입 연산자
   BigInteger &operator=(uint64_t u) {
     digits_[0] = u;
     count_ = 1;
     return *this;
   }
 
+  // uint64_t를 더하는 연산자
   BigInteger &operator+=(uint64_t u) {
     Type backup = digits_[0];
     digits_[0] += u;
     for (size_t i = 0; i < count_ - 1; i++) {
-      if (digits_[i] >= backup) return *this;  // no carry
+      if (digits_[i] >= backup) return *this;  // 자리올림 없음
       backup = digits_[i + 1];
       digits_[i + 1] += 1;
     }
 
-    // Last carry
+    // 마지막 자리올림
     if (digits_[count_ - 1] < backup) PushBack(1);
 
     return *this;
   }
 
+  // uint64_t를 곱하는 연산자
   BigInteger &operator*=(uint64_t u) {
-    if (u == 0) return *this = 0;
-    if (u == 1) return *this;
-    if (*this == 1) return *this = u;
+    if (u == 0) return *this = 0;  // u가 0이면 0으로 설정
+    if (u == 1) return *this;  // u가 1이면 그대로 반환
+    if (*this == 1) return *this = u;  // 현재 값이 1이면 u로 설정
 
     uint64_t k = 0;
     for (size_t i = 0; i < count_; i++) {
       uint64_t hi;
-      digits_[i] = MulAdd64(digits_[i], u, k, &hi);
+      digits_[i] = MulAdd64(digits_[i], u, k, &hi);  // 곱셈 및 자리올림 처리
       k = hi;
     }
 
-    if (k > 0) PushBack(k);
+    if (k > 0) PushBack(k);  // 남은 자리올림 처리
 
     return *this;
   }
 
+  // uint32_t를 곱하는 연산자
   BigInteger &operator*=(uint32_t u) {
-    if (u == 0) return *this = 0;
-    if (u == 1) return *this;
-    if (*this == 1) return *this = u;
+    if (u == 0) return *this = 0;  // u가 0이면 0으로 설정
+    if (u == 1) return *this;  // u가 1이면 그대로 반환
+    if (*this == 1) return *this = u;  // 현재 값이 1이면 u로 설정
 
     uint64_t k = 0;
     for (size_t i = 0; i < count_; i++) {
@@ -117,45 +127,49 @@ class BigInteger {
       k = p1 >> 32;
     }
 
-    if (k > 0) PushBack(k);
+    if (k > 0) PushBack(k);  // 남은 자리올림 처리
 
     return *this;
   }
 
+  // 비트를 왼쪽으로 이동하는 연산자
   BigInteger &operator<<=(size_t shift) {
-    if (IsZero() || shift == 0) return *this;
+    if (IsZero() || shift == 0) return *this;  // 현재 값이 0이거나 이동할 필요가 없으면 반환
 
     size_t offset = shift / kTypeBit;
     size_t interShift = shift % kTypeBit;
     RAPIDJSON_ASSERT(count_ + offset <= kCapacity);
 
     if (interShift == 0) {
-      std::memmove(digits_ + offset, digits_, count_ * sizeof(Type));
+      std::memmove(digits_ + offset, digits_, count_ * sizeof(Type));  // 자리 이동
       count_ += offset;
     } else {
       digits_[count_] = 0;
       for (size_t i = count_; i > 0; i--)
         digits_[i + offset] = (digits_[i] << interShift) |
-                              (digits_[i - 1] >> (kTypeBit - interShift));
+                              (digits_[i - 1] >> (kTypeBit - interShift));  // 비트 이동
       digits_[offset] = digits_[0] << interShift;
       count_ += offset;
       if (digits_[count_]) count_++;
     }
 
-    std::memset(digits_, 0, offset * sizeof(Type));
+    std::memset(digits_, 0, offset * sizeof(Type));  // 남은 자리 0으로 설정
 
     return *this;
   }
 
+  // 두 BigInteger가 같은지 비교하는 연산자
   bool operator==(const BigInteger &rhs) const {
     return count_ == rhs.count_ &&
            std::memcmp(digits_, rhs.digits_, count_ * sizeof(Type)) == 0;
   }
 
+  // BigInteger와 uint64_t를 비교하는 연산자
   bool operator==(const Type rhs) const {
     return count_ == 1 && digits_[0] == rhs;
   }
 
+  // 5의 제곱수를 곱하는 함수
   BigInteger &MultiplyPow5(unsigned exp) {
     static const uint32_t kPow5[12] = {
         5,
@@ -169,22 +183,21 @@ class BigInteger {
         5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
         5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
         5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5};
+        5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5};  // 5의 제곱수 테이블
     if (exp == 0) return *this;
     for (; exp >= 27; exp -= 27)
       *this *= RAPIDJSON_UINT64_C2(0X6765C793, 0XFA10079D);  // 5^27
     for (; exp >= 13; exp -= 13)
       *this *= static_cast<uint32_t>(1220703125u);  // 5^13
-    if (exp > 0) *this *= kPow5[exp - 1];
+    if (exp > 0) *this *= kPow5[exp - 1];  // 남은 제곱수 곱하기
     return *this;
   }
 
-  // Compute absolute difference of this and rhs.
-  // Assume this != rhs
+  // 절대 차이를 계산하는 함수. this != rhs가 전제 조건
   bool Difference(const BigInteger &rhs, BigInteger *out) const {
     int cmp = Compare(rhs);
     RAPIDJSON_ASSERT(cmp != 0);
-    const BigInteger *a, *b;  // Makes a > b
+    const BigInteger *a, *b;  // a > b가 되도록 설정
     bool ret;
     if (cmp < 0) {
       a = &rhs;
@@ -208,6 +221,7 @@ class BigInteger {
     return ret;
   }
 
+  // 두 BigInteger를 비교하는 함수
   int Compare(const BigInteger &rhs) const {
     if (count_ != rhs.count_) return count_ < rhs.count_ ? -1 : 1;
 
@@ -218,14 +232,18 @@ class BigInteger {
     return 0;
   }
 
+  // count_ 값을 반환하는 함수
   size_t GetCount() const { return count_; }
+  // 특정 인덱스의 digit을 반환하는 함수
   Type GetDigit(size_t index) const {
     RAPIDJSON_ASSERT(index < count_);
     return digits_[index];
   }
+  // 값이 0인지 확인하는 함수
   bool IsZero() const { return count_ == 1 && digits_[0] == 0; }
 
  private:
+  // 10진수 문자열을 추가하는 함수
   void AppendDecimal64(const char *begin, const char *end) {
     uint64_t u = ParseUint64(begin, end);
     if (IsZero())
@@ -236,11 +254,13 @@ class BigInteger {
     }
   }
 
+  // digit을 추가하는 함수
   void PushBack(Type digit) {
     RAPIDJSON_ASSERT(count_ < kCapacity);
     digits_[count_++] = digit;
   }
 
+  // 10진수 문자열을 uint64_t로 파싱하는 함수
   static uint64_t ParseUint64(const char *begin, const char *end) {
     uint64_t r = 0;
     for (const char *p = begin; p != end; ++p) {
@@ -250,7 +270,7 @@ class BigInteger {
     return r;
   }
 
-  // Assume a * b + k < 2^128
+  // a * b + k < 2^128를 가정하는 함수
   static uint64_t MulAdd64(uint64_t a, uint64_t b, uint64_t k,
                            uint64_t *outHigh) {
 #if defined(_MSC_VER) && defined(_M_AMD64)
@@ -268,7 +288,7 @@ class BigInteger {
     const uint64_t a0 = a & 0xFFFFFFFF, a1 = a >> 32, b0 = b & 0xFFFFFFFF,
                    b1 = b >> 32;
     uint64_t x0 = a0 * b0, x1 = a0 * b1, x2 = a1 * b0, x3 = a1 * b1;
-    x1 += (x0 >> 32);  // can't give carry
+    x1 += (x0 >> 32);  // 자리올림 없음
     x1 += x2;
     if (x1 < x2) x3 += (static_cast<uint64_t>(1) << 32);
     uint64_t lo = (x1 << 32) + (x0 & 0xFFFFFFFF);
@@ -281,12 +301,13 @@ class BigInteger {
 #endif
   }
 
-  static const size_t kBitCount = 3328;  // 64bit * 54 > 10^1000
+  // 상수 정의
+  static const size_t kBitCount = 3328;  // 64비트 * 54 > 10^1000
   static const size_t kCapacity = kBitCount / sizeof(Type);
   static const size_t kTypeBit = sizeof(Type) * 8;
 
-  Type digits_[kCapacity];
-  size_t count_;
+  Type digits_[kCapacity];  // 숫자 배열
+  size_t count_;  // 배열의 유효 길이
 };
 
 }  // namespace internal
