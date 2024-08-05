@@ -22,30 +22,30 @@
 // SOFTWARE.
 //
 
-#ifndef LIVOX_ROS_DRIVER_SEMAPHORE_H_
-#define LIVOX_ROS_DRIVER_SEMAPHORE_H_
+#ifndef LIVOX_ROS_DRIVER_SEMAPHORE_H_ // LIVOX_ROS_DRIVER_SEMAPHORE_H_가 정의되지 않았을 때
+#define LIVOX_ROS_DRIVER_SEMAPHORE_H_ // LIVOX_ROS_DRIVER_SEMAPHORE_H_를 정의
 
-#include <mutex>
-#include <condition_variable>
+#include <mutex> // 뮤텍스 사용을 위한 헤더 파일 포함
+#include <condition_variable> // 조건 변수 사용을 위한 헤더 파일 포함
 
-namespace livox_ros {
+namespace livox_ros { // livox_ros 네임스페이스 시작
 
-class Semaphore {
+class Semaphore { // Semaphore 클래스 정의
  public:
-  explicit Semaphore(int count = 0) : count_(count) {
+  explicit Semaphore(int count = 0) : count_(count) { // 생성자, 초기 카운트 설정
   }
-  void Signal();
-  void Wait();
-  int GetCount() {
+  void Signal(); // 세마포어 신호 함수
+  void Wait(); // 세마포어 대기 함수
+  int GetCount() { // 현재 카운트 반환 함수
     return count_;
   }
 
  private:
-  std::mutex mutex_;
-  std::condition_variable cv_;
-  volatile int count_;
+  std::mutex mutex_; // 뮤텍스
+  std::condition_variable cv_; // 조건 변수
+  volatile int count_; // 카운트
 };
 
-} // namespace livox_ros
+} // namespace livox_ros // livox_ros 네임스페이스 끝
 
-#endif // LIVOX_ROS_DRIVER_SEMAPHORE_H_
+#endif // LIVOX_ROS_DRIVER_SEMAPHORE_H_ // LIVOX_ROS_DRIVER_SEMAPHORE_H_ 종료
