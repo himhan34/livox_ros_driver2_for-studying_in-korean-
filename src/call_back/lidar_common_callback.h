@@ -22,19 +22,21 @@
 // SOFTWARE.
 //
 
-#ifndef LIVOX_ROS_DRIVER_LIDAR_COMMON_CALLBACK_H_
-#define LIVOX_ROS_DRIVER_LIDAR_COMMON_CALLBACK_H_	
+#ifndef LIVOX_ROS_DRIVER_LIDAR_COMMON_CALLBACK_H_ // LIVOX_ROS_DRIVER_LIDAR_COMMON_CALLBACK_H_가 정의되지 않았을 때
+#define LIVOX_ROS_DRIVER_LIDAR_COMMON_CALLBACK_H_ // LIVOX_ROS_DRIVER_LIDAR_COMMON_CALLBACK_H_를 정의
 
-#include "comm/comm.h"
+#include "comm/comm.h" // "comm/comm.h" 헤더 파일 포함
 
-namespace livox_ros {
+namespace livox_ros { // livox_ros 네임스페이스 시작
 
-class LidarCommonCallback {
+class LidarCommonCallback { // LidarCommonCallback 클래스 정의
  public:
+  // Lidar 포인트 클라우드 콜백 함수 (정적 함수)
   static void OnLidarPointClounCb(PointFrame* frame, void* client_data);
+  // Lidar IMU 데이터 콜백 함수 (정적 함수)
   static void LidarImuDataCallback(ImuData* imu_data, void *client_data);
 };
 
-} // namespace livox_ros
+} // namespace livox_ros // livox_ros 네임스페이스 끝
 
-#endif // LIVOX_ROS_DRIVER_LIDAR_COMMON_CALLBACK_H_
+#endif // LIVOX_ROS_DRIVER_LIDAR_COMMON_CALLBACK_H_ // LIVOX_ROS_DRIVER_LIDAR_COMMON_CALLBACK_H_ 종료
