@@ -16,14 +16,14 @@
 // License for the specific language governing permissions and limitations under
 // the License.
 
-#ifndef RAPIDJSON_ERROR_ERROR_H_
-#define RAPIDJSON_ERROR_ERROR_H_
+#ifndef RAPIDJSON_ERROR_ERROR_H_ // RAPIDJSON_ERROR_ERROR_H_가 정의되지 않았을 때
+#define RAPIDJSON_ERROR_ERROR_H_ // RAPIDJSON_ERROR_ERROR_H_를 정의
 
-#include "../rapidjson.h"
+#include "../rapidjson.h" // "rapidjson.h" 헤더 파일 포함
 
-#ifdef __clang__
-RAPIDJSON_DIAG_PUSH
-RAPIDJSON_DIAG_OFF(padded)
+#ifdef __clang__ // 클랭 컴파일러를 사용할 때
+RAPIDJSON_DIAG_PUSH // 진단 푸시
+RAPIDJSON_DIAG_OFF(padded) // 패딩 경고 비활성화
 #endif
 
 /*! \file error.h */
@@ -33,11 +33,10 @@ RAPIDJSON_DIAG_OFF(padded)
 ///////////////////////////////////////////////////////////////////////////////
 // RAPIDJSON_ERROR_CHARTYPE
 
-//! Character type of error messages.
+//! 에러 메시지의 문자 타입 정의
 /*! \ingroup RAPIDJSON_ERRORS
-    The default character type is \c char.
-    On Windows, user can define this macro as \c TCHAR for supporting both
-    unicode/non-unicode settings.
+    기본 문자 타입은 \c char 입니다.
+    Windows에서는 유저가 이 매크로를 \c TCHAR로 정의하여 유니코드/비유니코드 설정을 모두 지원할 수 있습니다.
 */
 #ifndef RAPIDJSON_ERROR_CHARTYPE
 #define RAPIDJSON_ERROR_CHARTYPE char
@@ -46,64 +45,53 @@ RAPIDJSON_DIAG_OFF(padded)
 ///////////////////////////////////////////////////////////////////////////////
 // RAPIDJSON_ERROR_STRING
 
-//! Macro for converting string literial to \ref RAPIDJSON_ERROR_CHARTYPE[].
+//! 문자열 리터럴을 \ref RAPIDJSON_ERROR_CHARTYPE[]로 변환하는 매크로
 /*! \ingroup RAPIDJSON_ERRORS
-    By default this conversion macro does nothing.
-    On Windows, user can define this macro as \c _T(x) for supporting both
-    unicode/non-unicode settings.
+    기본적으로 이 변환 매크로는 아무 작업도 수행하지 않습니다.
+    Windows에서는 유저가 이 매크로를 \c _T(x)로 정의하여 유니코드/비유니코드 설정을 모두 지원할 수 있습니다.
 */
 #ifndef RAPIDJSON_ERROR_STRING
 #define RAPIDJSON_ERROR_STRING(x) x
 #endif
 
-RAPIDJSON_NAMESPACE_BEGIN
+RAPIDJSON_NAMESPACE_BEGIN // rapidjson 네임스페이스 시작
 
 ///////////////////////////////////////////////////////////////////////////////
 // ParseErrorCode
 
-//! Error code of parsing.
+//! 파싱 에러 코드
 /*! \ingroup RAPIDJSON_ERRORS
     \see GenericReader::Parse, GenericReader::GetParseErrorCode
 */
 enum ParseErrorCode {
-  kParseErrorNone = 0,  //!< No error.
+  kParseErrorNone = 0,  //!< 에러 없음.
 
-  kParseErrorDocumentEmpty,            //!< The document is empty.
-  kParseErrorDocumentRootNotSingular,  //!< The document root must not follow by
-                                       //!< other values.
+  kParseErrorDocumentEmpty,            //!< 문서가 비어 있음.
+  kParseErrorDocumentRootNotSingular,  //!< 문서 루트 뒤에 다른 값이 올 수 없음.
 
-  kParseErrorValueInvalid,  //!< Invalid value.
+  kParseErrorValueInvalid,  //!< 유효하지 않은 값.
 
-  kParseErrorObjectMissName,   //!< Missing a name for object member.
-  kParseErrorObjectMissColon,  //!< Missing a colon after a name of object
-                               //!< member.
-  kParseErrorObjectMissCommaOrCurlyBracket,  //!< Missing a comma or '}' after
-                                             //!an
-                                             //!< object member.
+  kParseErrorObjectMissName,   //!< 객체 멤버의 이름이 없음.
+  kParseErrorObjectMissColon,  //!< 객체 멤버 이름 뒤에 콜론이 없음.
+  kParseErrorObjectMissCommaOrCurlyBracket,  //!< 객체 멤버 뒤에 쉼표 또는 '}'가 없음.
 
-  kParseErrorArrayMissCommaOrSquareBracket,  //!< Missing a comma or ']' after
-                                             //!an
-                                             //!< array element.
+  kParseErrorArrayMissCommaOrSquareBracket,  //!< 배열 요소 뒤에 쉼표 또는 ']'가 없음.
 
-  kParseErrorStringUnicodeEscapeInvalidHex,  //!< Incorrect hex digit after \\u
-                                             //!< escape in string.
-  kParseErrorStringUnicodeSurrogateInvalid,  //!< The surrogate pair in string
-                                             //!is
-                                             //!< invalid.
-  kParseErrorStringEscapeInvalid,      //!< Invalid escape character in string.
-  kParseErrorStringMissQuotationMark,  //!< Missing a closing quotation mark in
-                                       //!< string.
-  kParseErrorStringInvalidEncoding,    //!< Invalid encoding in string.
+  kParseErrorStringUnicodeEscapeInvalidHex,  //!< 문자열에서 \u 이스케이프 뒤의 잘못된 16진수.
+  kParseErrorStringUnicodeSurrogateInvalid,  //!< 문자열의 대리 쌍이 유효하지 않음.
+  kParseErrorStringEscapeInvalid,      //!< 문자열에서 유효하지 않은 이스케이프 문자.
+  kParseErrorStringMissQuotationMark,  //!< 문자열에서 닫는 따옴표가 없음.
+  kParseErrorStringInvalidEncoding,    //!< 문자열에서 유효하지 않은 인코딩.
 
-  kParseErrorNumberTooBig,        //!< Number too big to be stored in double.
-  kParseErrorNumberMissFraction,  //!< Miss fraction part in number.
-  kParseErrorNumberMissExponent,  //!< Miss exponent in number.
+  kParseErrorNumberTooBig,        //!< double에 저장하기에 너무 큰 숫자.
+  kParseErrorNumberMissFraction,  //!< 숫자에서 소수 부분이 없음.
+  kParseErrorNumberMissExponent,  //!< 숫자에서 지수 부분이 없음.
 
-  kParseErrorTermination,           //!< Parsing was terminated.
-  kParseErrorUnspecificSyntaxError  //!< Unspecific syntax error.
+  kParseErrorTermination,           //!< 파싱이 중단됨.
+  kParseErrorUnspecificSyntaxError  //!< 구체적이지 않은 구문 오류.
 };
 
-//! Result of parsing (wraps ParseErrorCode)
+//! 파싱 결과 (ParseErrorCode를 래핑)
 /*!
     \ingroup RAPIDJSON_ERRORS
     \code
@@ -118,26 +106,23 @@ enum ParseErrorCode {
     \see GenericReader::Parse, GenericDocument::Parse
 */
 struct ParseResult {
-  //!! Unspecified boolean type
+  //!! 명시되지 않은 불리언 타입
   typedef bool (ParseResult::*BooleanType)() const;
 
  public:
-  //! Default constructor, no error.
+  //! 기본 생성자, 에러 없음.
   ParseResult() : code_(kParseErrorNone), offset_(0) {}
-  //! Constructor to set an error.
-  ParseResult(ParseErrorCode code, size_t offset)
-      : code_(code), offset_(offset) {}
+  //! 에러를 설정하는 생성자.
+  ParseResult(ParseErrorCode code, size_t offset) : code_(code), offset_(offset) {}
 
-  //! Get the error code.
+  //! 에러 코드를 가져옴.
   ParseErrorCode Code() const { return code_; }
-  //! Get the error offset, if \ref IsError(), 0 otherwise.
+  //! 에러 오프셋을 가져옴, \ref IsError()일 때만 유효, 그렇지 않으면 0.
   size_t Offset() const { return offset_; }
 
-  //! Explicit conversion to \c bool, returns \c true, iff !\ref IsError().
-  operator BooleanType() const {
-    return !IsError() ? &ParseResult::IsError : NULL;
-  }
-  //! Whether the result is an error.
+  //! \c bool로의 명시적 변환, \c true를 반환, !\ref IsError()일 때만.
+  operator BooleanType() const { return !IsError() ? &ParseResult::IsError : NULL; }
+  //! 결과가 에러인지 여부.
   bool IsError() const { return code_ != kParseErrorNone; }
 
   bool operator==(const ParseResult &that) const { return code_ == that.code_; }
@@ -152,35 +137,35 @@ struct ParseResult {
     return err != code;
   }
 
-  //! Reset error code.
+  //! 에러 코드를 초기화.
   void Clear() { Set(kParseErrorNone); }
-  //! Update error code and offset.
+  //! 에러 코드와 오프셋을 업데이트.
   void Set(ParseErrorCode code, size_t offset = 0) {
     code_ = code;
     offset_ = offset;
   }
 
  private:
-  ParseErrorCode code_;
-  size_t offset_;
+  ParseErrorCode code_; // 에러 코드
+  size_t offset_; // 오프셋
 };
 
-//! Function pointer type of GetParseError().
+//! GetParseError()의 함수 포인터 타입.
 /*! \ingroup RAPIDJSON_ERRORS
 
-    This is the prototype for \c GetParseError_X(), where \c X is a locale.
-    User can dynamically change locale in runtime, e.g.:
+    이것은 \c GetParseError_X()의 프로토타입입니다, 여기서 \c X는 로케일입니다.
+    사용자는 런타임에 로케일을 동적으로 변경할 수 있습니다, 예:
 \code
-    GetParseErrorFunc GetParseError = GetParseError_En; // or whatever
-    const RAPIDJSON_ERROR_CHARTYPE* s =
-GetParseError(document.GetParseErrorCode()); \endcode
+    GetParseErrorFunc GetParseError = GetParseError_En; // 또는 다른 함수
+    const RAPIDJSON_ERROR_CHARTYPE* s = GetParseError(document.GetParseErrorCode());
+\endcode
 */
 typedef const RAPIDJSON_ERROR_CHARTYPE *(*GetParseErrorFunc)(ParseErrorCode);
 
-RAPIDJSON_NAMESPACE_END
+RAPIDJSON_NAMESPACE_END // rapidjson 네임스페이스 끝
 
-#ifdef __clang__
-RAPIDJSON_DIAG_POP
+#ifdef __clang__ // 클랭 컴파일러를 사용할 때
+RAPIDJSON_DIAG_POP // 진단 팝
 #endif
 
-#endif  // RAPIDJSON_ERROR_ERROR_H_
+#endif  // RAPIDJSON_ERROR_ERROR_H_ // RAPIDJSON_ERROR_ERROR_H_ 종료
