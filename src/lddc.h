@@ -20,7 +20,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-//
 
 #ifndef LIVOX_ROS_DRIVER2_LDDC_H_
 #define LIVOX_ROS_DRIVER2_LDDC_H_
@@ -32,21 +31,21 @@
 
 namespace livox_ros {
 
-/** Send pointcloud message Data to ros subscriber or save them in rosbag file */
+/** ROS 구독자에게 포인트클라우드 메시지 데이터를 보내거나 rosbag 파일에 저장합니다 */
 typedef enum {
-  kOutputToRos = 0,
-  kOutputToRosBagFile = 1,
+  kOutputToRos = 0, // ROS로 출력
+  kOutputToRosBagFile = 1, // rosbag 파일로 출력
 } DestinationOfMessageOutput;
 
-/** The message type of transfer */
+/** 전송 메시지의 유형 */
 typedef enum {
-  kPointCloud2Msg = 0,
-  kLivoxCustomMsg = 1,
-  kPclPxyziMsg = 2,
-  kLivoxImuMsg = 3,
+  kPointCloud2Msg = 0, // PointCloud2 메시지
+  kLivoxCustomMsg = 1, // Livox 커스텀 메시지
+  kPclPxyziMsg = 2, // PCL PXYZI 메시지
+  kLivoxImuMsg = 3, // Livox IMU 메시지
 } TransferType;
 
-/** Type-Definitions based on ROS versions */
+/** ROS 버전에 따른 타입 정의 */
 #ifdef BUILDING_ROS1
 using Publisher = ros::Publisher;
 using PublisherPtr = ros::Publisher*;
@@ -80,82 +79,82 @@ class Lddc final {
 #endif
   ~Lddc();
 
-  int RegisterLds(Lds *lds);
-  void DistributePointCloudData(void);
-  void DistributeImuData(void);
-  void CreateBagFile(const std::string &file_name);
-  void PrepareExit(void);
+  int RegisterLds(Lds *lds); // Lds 등록
+  void DistributePointCloudData(void); // 포인트클라우드 데이터 분배
+  void DistributeImuData(void); // IMU 데이터 분배
+  void CreateBagFile(const std::string &file_name); // Bag 파일 생성
+  void PrepareExit(void); // 종료 준비
 
-  uint8_t GetTransferFormat(void) { return transfer_format_; }
-  uint8_t IsMultiTopic(void) { return use_multi_topic_; }
-  void SetRosNode(livox_ros::DriverNode *node) { cur_node_ = node; }
+  uint8_t GetTransferFormat(void) { return transfer_format_; } // 전송 형식 가져오기
+  uint8_t IsMultiTopic(void) { return use_multi_topic_; } // 멀티 토픽 여부 확인
+  void SetRosNode(livox_ros::DriverNode *node) { cur_node_ = node; } // ROS 노드 설정
 
-  // void SetRosPub(ros::Publisher *pub) { global_pub_ = pub; };  // NOT USED
-  void SetPublishFrq(uint32_t frq) { publish_frq_ = frq; }
+  // void SetRosPub(ros::Publisher *pub) { global_pub_ = pub; };  // 사용되지 않음
+  void SetPublishFrq(uint32_t frq) { publish_frq_ = frq; } // 출판 빈도 설정
 
  public:
-  Lds *lds_;
+  Lds *lds_; // Lds 포인터
 
  private:
-  void PollingLidarPointCloudData(uint8_t index, LidarDevice *lidar);
-  void PollingLidarImuData(uint8_t index, LidarDevice *lidar);
+  void PollingLidarPointCloudData(uint8_t index, LidarDevice *lidar); // LiDAR 포인트클라우드 데이터 폴링
+  void PollingLidarImuData(uint8_t index, LidarDevice *lidar); // LiDAR IMU 데이터 폴링
 
-  void PublishPointcloud2(LidarDataQueue *queue, uint8_t index);
-  void PublishCustomPointcloud(LidarDataQueue *queue, uint8_t index);
-  void PublishPclMsg(LidarDataQueue *queue, uint8_t index);
+  void PublishPointcloud2(LidarDataQueue *queue, uint8_t index); // PointCloud2 메시지 발행
+  void PublishCustomPointcloud(LidarDataQueue *queue, uint8_t index); // 커스텀 포인트클라우드 발행
+  void PublishPclMsg(LidarDataQueue *queue, uint8_t index); // PCL 메시지 발행
 
-  void PublishImuData(LidarImuDataQueue& imu_data_queue, const uint8_t index);
+  void PublishImuData(LidarImuDataQueue& imu_data_queue, const uint8_t index); // IMU 데이터 발행
 
-  void InitPointcloud2MsgHeader(PointCloud2& cloud);
-  void InitPointcloud2Msg(const StoragePacket& pkg, PointCloud2& cloud, uint64_t& timestamp);
-  void PublishPointcloud2Data(const uint8_t index, uint64_t timestamp, const PointCloud2& cloud);
+  void InitPointcloud2MsgHeader(PointCloud2& cloud); // PointCloud2 메시지 헤더 초기화
+  void InitPointcloud2Msg(const StoragePacket& pkg, PointCloud2& cloud, uint64_t& timestamp); // PointCloud2 메시지 초기화
+  void PublishPointcloud2Data(const uint8_t index, uint64_t timestamp, const PointCloud2& cloud); // PointCloud2 데이터 발행
 
-  void InitCustomMsg(CustomMsg& livox_msg, const StoragePacket& pkg, uint8_t index);
-  void FillPointsToCustomMsg(CustomMsg& livox_msg, const StoragePacket& pkg);
-  void PublishCustomPointData(const CustomMsg& livox_msg, const uint8_t index);
+  void InitCustomMsg(CustomMsg& livox_msg, const StoragePacket& pkg, uint8_t index); // 커스텀 메시지 초기화
+  void FillPointsToCustomMsg(CustomMsg& livox_msg, const StoragePacket& pkg); // 커스텀 메시지에 포인트 채우기
+  void PublishCustomPointData(const CustomMsg& livox_msg, const uint8_t index); // 커스텀 포인트 데이터 발행
 
-  void InitPclMsg(const StoragePacket& pkg, PointCloud& cloud, uint64_t& timestamp);
-  void FillPointsToPclMsg(const StoragePacket& pkg, PointCloud& pcl_msg);
-  void PublishPclData(const uint8_t index, const uint64_t timestamp, const PointCloud& cloud);
+  void InitPclMsg(const StoragePacket& pkg, PointCloud& cloud, uint64_t& timestamp); // PCL 메시지 초기화
+  void FillPointsToPclMsg(const StoragePacket& pkg, PointCloud& pcl_msg); // PCL 메시지에 포인트 채우기
+  void PublishPclData(const uint8_t index, const uint64_t timestamp, const PointCloud& cloud); // PCL 데이터 발행
 
-  void InitImuMsg(const ImuData& imu_data, ImuMsg& imu_msg, uint64_t& timestamp);
+  void InitImuMsg(const ImuData& imu_data, ImuMsg& imu_msg, uint64_t& timestamp); // IMU 메시지 초기화
 
-  void FillPointsToPclMsg(PointCloud& pcl_msg, LivoxPointXyzrtlt* src_point, uint32_t num);
+  void FillPointsToPclMsg(PointCloud& pcl_msg, LivoxPointXyzrtlt* src_point, uint32_t num); // PCL 메시지에 포인트 채우기
   void FillPointsToCustomMsg(CustomMsg& livox_msg, LivoxPointXyzrtlt* src_point, uint32_t num,
-      uint32_t offset_time, uint32_t point_interval, uint32_t echo_num);
+      uint32_t offset_time, uint32_t point_interval, uint32_t echo_num); // 커스텀 메시지에 포인트 채우기
 
 #ifdef BUILDING_ROS2
-  PublisherPtr CreatePublisher(uint8_t msg_type, std::string &topic_name, uint32_t queue_size);
+  PublisherPtr CreatePublisher(uint8_t msg_type, std::string &topic_name, uint32_t queue_size); // 퍼블리셔 생성
 #endif
 
-  PublisherPtr GetCurrentPublisher(uint8_t index);
-  PublisherPtr GetCurrentImuPublisher(uint8_t index);
+  PublisherPtr GetCurrentPublisher(uint8_t index); // 현재 퍼블리셔 가져오기
+  PublisherPtr GetCurrentImuPublisher(uint8_t index); // 현재 IMU 퍼블리셔 가져오기
 
  private:
-  uint8_t transfer_format_;
-  uint8_t use_multi_topic_;
-  uint8_t data_src_;
-  uint8_t output_type_;
-  double publish_frq_;
-  uint32_t publish_period_ns_;
-  std::string frame_id_;
+  uint8_t transfer_format_; // 전송 형식
+  uint8_t use_multi_topic_; // 멀티 토픽 사용 여부
+  uint8_t data_src_; // 데이터 소스
+  uint8_t output_type_; // 출력 유형
+  double publish_frq_; // 출판 빈도
+  uint32_t publish_period_ns_; // 출판 주기 (나노초)
+  std::string frame_id_; // 프레임 ID
 
 #ifdef BUILDING_ROS1
-  bool enable_lidar_bag_;
-  bool enable_imu_bag_;
-  PublisherPtr private_pub_[kMaxSourceLidar];
-  PublisherPtr global_pub_;
-  PublisherPtr private_imu_pub_[kMaxSourceLidar];
-  PublisherPtr global_imu_pub_;
-  rosbag::Bag *bag_;
+  bool enable_lidar_bag_; // LiDAR bag 사용 여부
+  bool enable_imu_bag_; // IMU bag 사용 여부
+  PublisherPtr private_pub_[kMaxSourceLidar]; // 개인 퍼블리셔
+  PublisherPtr global_pub_; // 전역 퍼블리셔
+  PublisherPtr private_imu_pub_[kMaxSourceLidar]; // 개인 IMU 퍼블리셔
+  PublisherPtr global_imu_pub_; // 전역 IMU 퍼블리셔
+  rosbag::Bag *bag_; // rosbag 포인터
 #elif defined BUILDING_ROS2
-  PublisherPtr private_pub_[kMaxSourceLidar];
-  PublisherPtr global_pub_;
-  PublisherPtr private_imu_pub_[kMaxSourceLidar];
-  PublisherPtr global_imu_pub_;
+  PublisherPtr private_pub_[kMaxSourceLidar]; // 개인 퍼블리셔
+  PublisherPtr global_pub_; // 전역 퍼블리셔
+  PublisherPtr private_imu_pub_[kMaxSourceLidar]; // 개인 IMU 퍼블리셔
+  PublisherPtr global_imu_pub_; // 전역 IMU 퍼블리셔
 #endif
 
-  livox_ros::DriverNode *cur_node_;
+  livox_ros::DriverNode *cur_node_; // 현재 노드
 };
 
 }  // namespace livox_ros
