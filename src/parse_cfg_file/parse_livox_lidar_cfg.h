@@ -22,37 +22,36 @@
 // SOFTWARE.
 //
 
-#ifndef LIVOX_ROS_DRIVER_LIVOX_LIDAR_CFG_PARSER_H_
-#define LIVOX_ROS_DRIVER_LIVOX_LIDAR_CFG_PARSER_H_
+#ifndef LIVOX_ROS_DRIVER_LIVOX_LIDAR_CFG_PARSER_H_ // LIVOX_ROS_DRIVER_LIVOX_LIDAR_CFG_PARSER_H_가 정의되지 않았을 때
+#define LIVOX_ROS_DRIVER_LIVOX_LIDAR_CFG_PARSER_H_ // LIVOX_ROS_DRIVER_LIVOX_LIDAR_CFG_PARSER_H_를 정의
 
-#include "comm/comm.h"
-#include "livox_lidar_def.h"
+#include "comm/comm.h" // 공통 헤더 파일 포함
+#include "livox_lidar_def.h" // Livox Lidar 정의 헤더 파일 포함
 
-#include "rapidjson/document.h"
-#include "rapidjson/filereadstream.h"
-#include "rapidjson/stringbuffer.h"
+#include "rapidjson/document.h" // rapidjson 문서 헤더 파일 포함
+#include "rapidjson/filereadstream.h" // rapidjson 파일 읽기 스트림 헤더 파일 포함
+#include "rapidjson/stringbuffer.h" // rapidjson 문자열 버퍼 헤더 파일 포함
 
-#include <iostream>
-#include <string>
-#include <vector>
+#include <iostream> // 입출력을 위한 헤더 파일 포함
+#include <string> // 문자열 처리를 위한 헤더 파일 포함
+#include <vector> // 벡터를 위한 헤더 파일 포함
 
-namespace livox_ros {
-  
-class LivoxLidarConfigParser {
+namespace livox_ros { // livox_ros 네임스페이스 시작
+
+class LivoxLidarConfigParser { // LivoxLidarConfigParser 클래스 정의
  public:
-  explicit LivoxLidarConfigParser(const std::string& path)  : path_(path) {}
-  ~LivoxLidarConfigParser() {}
+  explicit LivoxLidarConfigParser(const std::string& path) : path_(path) {} // 생성자 정의, 경로를 멤버 변수에 저장
+  ~LivoxLidarConfigParser() {} // 소멸자 정의
 
-  bool Parse(std::vector<UserLivoxLidarConfig> &lidar_configs);
+  bool Parse(std::vector<UserLivoxLidarConfig> &lidar_configs); // 설정 파싱 함수 정의
 
  private:
-  bool ParseUserConfigs(const rapidjson::Document &doc,
-                         std::vector<UserLivoxLidarConfig> &user_configs);
-  bool ParseExtrinsics(const rapidjson::Value &value, ExtParameter &param);
+  bool ParseUserConfigs(const rapidjson::Document &doc, std::vector<UserLivoxLidarConfig> &user_configs); // 사용자 설정 파싱 함수 정의
+  bool ParseExtrinsics(const rapidjson::Value &value, ExtParameter &param); // 외부 매개변수 파싱 함수 정의
 
-  const std::string path_;
+  const std::string path_; // 경로를 저장할 멤버 변수
 };
 
-} // namespace livox_ros
+} // namespace livox_ros // livox_ros 네임스페이스 끝
 
-#endif // LIVOX_ROS_DRIVER_LIVOX_LIDAR_CFG_PARSER_H_
+#endif // LIVOX_ROS_DRIVER_LIVOX_LIDAR_CFG_PARSER_H_ // LIVOX_ROS_DRIVER_LIVOX_LIDAR_CFG_PARSER_H_ 종료
