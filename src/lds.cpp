@@ -34,72 +34,82 @@
 
 namespace livox_ros {
 
+// CacheIndex 클래스의 정적 멤버 초기화
 CacheIndex Lds::cache_index_;
 
-/* Member function --------------------------------------------------------- */
+/* 멤버 함수 --------------------------------------------------------- */
+// Lds 클래스의 생성자
 Lds::Lds(const double publish_freq, const uint8_t data_src)
-    : lidar_count_(kMaxSourceLidar),
-      pcd_semaphore_(0),
-      imu_semaphore_(0),
-      publish_freq_(publish_freq),
-      data_src_(data_src),
-      request_exit_(false) {
-  ResetLds(data_src_);
+    : lidar_count_(kMaxSourceLidar),       // 라이다의 최대 개수로 초기화
+      pcd_semaphore_(0),                   // PCD 세마포어 초기화
+      imu_semaphore_(0),                   // IMU 세마포어 초기화
+      publish_freq_(publish_freq),         // 주기 설정
+      data_src_(data_src),                 // 데이터 소스 설정
+      request_exit_(false) {               // 종료 요청 상태 초기화
+  ResetLds(data_src_);                     // Lds 초기화 함수 호출
 }
 
+// Lds 클래스의 소멸자
 Lds::~Lds() {
-  lidar_count_ = 0;
-  ResetLds(0);
+  lidar_count_ = 0;                       // 라이다 개수 0으로 설정
+  ResetLds(0);                            // Lds 초기화 함수 호출
   printf("lds destory!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 }
 
+// 라이다 장치를 초기화하는 함수
 void Lds::ResetLidar(LidarDevice *lidar, uint8_t data_src) {
-  //cache_index_.ResetIndex(lidar);
-  DeInitQueue(&lidar->data);
-  lidar->imu_data.Clear();
+  // cache_index_.ResetIndex(lidar);  // 캐시 인덱스 초기화 (주석 처리됨)
+  DeInitQueue(&lidar->data);          // 데이터 큐 초기화 해제
+  lidar->imu_data.Clear();            // IMU 데이터 초기화
 
-  lidar->data_src = data_src;
-  lidar->connect_state = kConnectStateOff;
+  lidar->data_src = data_src;         // 데이터 소스 설정
+  lidar->connect_state = kConnectStateOff;  // 연결 상태를 꺼짐으로 설정
 }
 
+// 라이다 장치의 데이터 소스를 설정하는 함수
 void Lds::SetLidarDataSrc(LidarDevice *lidar, uint8_t data_src) {
-  lidar->data_src = data_src;
+  lidar->data_src = data_src;         // 데이터 소스 설정
 }
 
+// Lds를 초기화하는 함수
 void Lds::ResetLds(uint8_t data_src) {
-  lidar_count_ = kMaxSourceLidar;
+  lidar_count_ = kMaxSourceLidar;     // 라이다 개수를 최대 값으로 설정
   for (uint32_t i = 0; i < kMaxSourceLidar; i++) {
-    ResetLidar(&lidars_[i], data_src);
+    ResetLidar(&lidars_[i], data_src);  // 각 라이다를 초기화
   }
 }
 
+// 종료 요청을 설정하는 함수
 void Lds::RequestExit() {
-  request_exit_ = true;
+  request_exit_ = true;               // 종료 요청 상태를 true로 설정
 }
 
+// 모든 큐가 비어있는지 확인하는 함수
 bool Lds::IsAllQueueEmpty() {
   for (int i = 0; i < lidar_count_; i++) {
-    if (!QueueIsEmpty(&lidars_[i].data)) {
+    if (!QueueIsEmpty(&lidars_[i].data)) {  // 하나라도 비어있지 않으면 false 반환
       return false;
     }
   }
-  return true;
+  return true;                        // 모두 비어있으면 true 반환
 }
 
+// 모든 큐의 읽기가 중지되었는지 확인하는 함수
 bool Lds::IsAllQueueReadStop() {
   for (int i = 0; i < lidar_count_; i++) {
-    uint32_t data_size = QueueUsedSize(&lidars_[i].data);
+    uint32_t data_size = QueueUsedSize(&lidars_[i].data);  // 큐에 사용된 크기 확인
     if (data_size) {
-      return false;
+      return false;                   // 데이터가 남아있으면 false 반환
     }
   }
-  return true;
+  return true;                        // 모두 중지되었으면 true 반환
 }
 
+// IMU 데이터를 저장하는 함수
 void Lds::StorageImuData(ImuData* imu_data) {
   uint32_t device_num = 0;
   if (imu_data->lidar_type == kLivoxLidarType) {
-    device_num = imu_data->handle;
+    device_num = imu_data->handle;    // 라이다 핸들 설정
   } else {
     printf("Storage imu data failed, unknown lidar type:%u.\n", imu_data->lidar_type);
     return;
@@ -114,14 +124,15 @@ void Lds::StorageImuData(ImuData* imu_data) {
 
   LidarDevice *p_lidar = &lidars_[index];
   LidarImuDataQueue* imu_queue = &p_lidar->imu_data;
-  imu_queue->Push(imu_data);
-  if (!imu_queue->Empty()) {
+  imu_queue->Push(imu_data);          // IMU 데이터를 큐에 추가
+  if (!imu_queue->Empty()) {          // 큐가 비어있지 않으면
     if (imu_semaphore_.GetCount() <= 0) {
-      imu_semaphore_.Signal();
+      imu_semaphore_.Signal();        // 세마포어 신호 발생
     }
   }
 }
 
+// LVX 포인트 데이터를 저장하는 함수
 void Lds::StorageLvxPointData(PointFrame* frame) {
   if (frame == nullptr) {
     return;
@@ -139,12 +150,13 @@ void Lds::StorageLvxPointData(PointFrame* frame) {
       continue;
     }
 
-    lidars_[index].connect_state = kConnectStateSampling;
+    lidars_[index].connect_state = kConnectStateSampling;  // 연결 상태를 샘플링으로 설정
 
-    PushLidarData(&lidar_point, index, base_time);
+    PushLidarData(&lidar_point, index, base_time);  // 라이다 데이터를 큐에 추가
   }
 }
 
+// 포인트 데이터를 저장하는 함수
 void Lds::StoragePointData(PointFrame* frame) {
   if (frame == nullptr) {
     return;
@@ -163,10 +175,11 @@ void Lds::StoragePointData(PointFrame* frame) {
       printf("Storage point data failed, lidar type:%u, handle:%u.\n", lidar_point.lidar_type, lidar_point.handle);
       continue;
     }
-    PushLidarData(&lidar_point, index, base_time);
+    PushLidarData(&lidar_point, index, base_time);  // 라이다 데이터를 큐에 추가
   }
 }
 
+// 라이다 데이터를 큐에 추가하는 함수
 void Lds::PushLidarData(PointPacket* lidar_data, const uint8_t index, const uint64_t base_time) {
   if (lidar_data == nullptr) {
     return;
@@ -177,24 +190,25 @@ void Lds::PushLidarData(PointPacket* lidar_data, const uint8_t index, const uint
 
   if (nullptr == queue->storage_packet) {
     uint32_t queue_size = CalculatePacketQueueSize(publish_freq_);
-    InitQueue(queue, queue_size);
+    InitQueue(queue, queue_size);     // 큐 초기화
     printf("Lidar[%u] storage queue size: %u\n", index, queue_size);
   }
 
-  if (!QueueIsFull(queue)) {
-    QueuePushAny(queue, (uint8_t *)lidar_data, base_time);
-    if (!QueueIsEmpty(queue)) {
+  if (!QueueIsFull(queue)) {          // 큐가 가득 차지 않았으면
+    QueuePushAny(queue, (uint8_t *)lidar_data, base_time);  // 큐에 데이터를 추가
+    if (!QueueIsEmpty(queue)) {       // 큐가 비어있지 않으면
       if (pcd_semaphore_.GetCount() <= 0) {
-        pcd_semaphore_.Signal();
+        pcd_semaphore_.Signal();      // 세마포어 신호 발생
       }
     }
   } else {
     if (pcd_semaphore_.GetCount() <= 0) {
-        pcd_semaphore_.Signal();
+        pcd_semaphore_.Signal();      // 큐가 가득 차도 세마포어 신호 발생
     }
   }
 }
 
+// 종료를 준비하는 함수
 void Lds::PrepareExit(void) {}
 
 }  // namespace livox_ros
