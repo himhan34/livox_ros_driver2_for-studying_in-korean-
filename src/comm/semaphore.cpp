@@ -22,20 +22,22 @@
 // SOFTWARE.
 //
 
-#include "semaphore.h"
+#include "semaphore.h" // "semaphore.h" 헤더 파일 포함
 
-namespace livox_ros {
+namespace livox_ros { // livox_ros 네임스페이스 시작
 
+// 세마포어 신호 함수
 void Semaphore::Signal() {
-  std::unique_lock<std::mutex> lock(mutex_);
-  ++count_;
-  cv_.notify_one();
+  std::unique_lock<std::mutex> lock(mutex_); // 뮤텍스 잠금
+  ++count_; // 카운트 증가
+  cv_.notify_one(); // 조건 변수 알림
 }
 
+// 세마포어 대기 함수
 void Semaphore::Wait() {
-  std::unique_lock<std::mutex> lock(mutex_);
-  cv_.wait(lock, [=] { return count_ > 0; });
-  --count_;
+  std::unique_lock<std::mutex> lock(mutex_); // 뮤텍스 잠금
+  cv_.wait(lock, [=] { return count_ > 0; }); // 카운트가 0보다 클 때까지 대기
+  --count_; // 카운트 감소
 }
 
-} // namespace livox_ros
+} // namespace livox_ros // livox_ros 네임스페이스 끝
